@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-
-=======
 # Z-SSMNet: A Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis in Bi-parametric MRI
 
 This repository provides the **official** implementation of the paper "[Z-SSMNet: A Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis in bpMRI](https://arxiv.org/abs/2212.05808)". In this paper, we propose a new Zonal-aware Self-supervised Mesh Network that adaptively fuses multiple 2D/2.5D/3D CNNs to effectively balance representation for sparse inter-slice information and dense intra-slice information in bpMRI. A self-supervised learning (SSL) technique is further introduced to pre-train our network using unlabelled data to learn the generalizable image features. Furthermore, we constrained our network to understand the zonal-specific domain knowledge to improve the diagnosis precision of clinically significant prostate cancer (csPCa). Our model was developed on the [PI-CAI dataset](https://zenodo.org/record/6624726) while participating in the [PI-CAI challenge](https://pi-cai.grand-challenge.org/).
@@ -182,6 +173,3 @@ Considering the heterogeneous between data from multi-centres and multi-vendors,
 [[4]](https://www.sciencedirect.com/science/article/pii/S1361841520302048) Z. Zhou, V. Sodha, J. Pang, M. B. Gotway, and J. Liang, “Models Genesis,” Med Image Anal, vol. 67, pp. 101840, Jan, 2021.
 
 [[5]](https://zenodo.org/record/6667655) A. Saha, J. J. Twilt, J. S. Bosma, B. van Ginneken, D. Yakar, M. Elschot, J. Veltman, J. J. Fütterer, M. de Rooij, H. Huisman, "Artificial Intelligence and Radiologists at Prostate Cancer Detection in MRI: The PI-CAI Challenge (Study Protocol)", DOI: 10.5281/zenodo.6667655
->>>>>>> my first commit
->>>>>>> my first commit
->>>>>>> my first submit
