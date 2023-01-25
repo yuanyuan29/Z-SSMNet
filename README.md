@@ -118,13 +118,13 @@ python -m z_ssmnet.splits.picai_nnunet --output "/workdir/splits/picai_nnunet"
 
 We follow the [`nnU-Net Raw Data Archive`](https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/dataset_conversion.md) format to prepare our dataset for usage. For this, you can use the [`picai_prep`](https://github.com/DIAGNijmegen/picai_prep) module. Note, the [`picai_prep`](https://github.com/DIAGNijmegen/picai_prep) module should be automatically installed when installing the `Z-SSMNet` module, and is installed within the `z-ssmnet` Docker container as well.
 
-To convert the dataset in `/input/` into the [`nnU-Net Raw Data Archive`](https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/dataset_conversion.md) format, and store it in `/workdir/nnUNet_raw_data`, please follow the instructions [provided here](https://github.com/DIAGNijmegen/picai_prep#mha-archive--nnu-net-raw-data-archive), or set your target paths in [`prepare_data.py`](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/prepare_data.py) and execute it:
+To convert the dataset in `/input/` into the [`nnU-Net Raw Data Archive`](https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/dataset_conversion.md) format, and store it in `/workdir/nnUNet_raw_data`, please follow the instructions [provided here](https://github.com/DIAGNijmegen/picai_prep#mha-archive--nnu-net-raw-data-archive), or set your target paths in [`prepare_data_semi_supervised.py`](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/prepare_data_semi_supervised.py) and execute it:
 
 ```shell
-python src/z_ssmnet/prepare_data.py
+python src/z_ssmnet/prepare_data_semi_supervised.py
 ```
 
-To adapt/modify the preprocessing pipeline or its default specifications, please make changes to the [`prepare_data.py`](https://github.com/DIAGNijmegen/picai_baseline/blob/main/src/picai_baseline/prepare_data.py) script accordingly.
+To adapt/modify the preprocessing pipeline or its default specifications, please make changes to the [`prepare_data_semi_supervised.py`](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/prepare_data_semi_supervised.py) script accordingly.
 
 Alternatively, you can use Docker to run the Python script:
 
@@ -133,8 +133,10 @@ docker run --cpus=2 --memory=16gb --rm \
     -v /path/to/input/:/input/ \
     -v /path/to/workdir/:/workdir/ \
     -v /path/to/Z-SSMNet:/scripts/Z-SSMNet/ \
-    yuanyuan29/z-ssmnet:latest python3 /scripts/Z-SSMNet/src/z_ssmnet/prepare_data.py
+    yuanyuan29/z-ssmnet:latest python3 /scripts/Z-SSMNet/src/z_ssmnet/prepare_data_semi_supervised.py
 ```
+
+If you want to train the supervised model (only using the data with manual labels), prepare the dataset using [`prepare_data.py`](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/prepare_data.py) and replace `Task2302_z-nnmnet` with `Task2301_z-nnmnet` in the following commands.
 
 ## Model Training
 
@@ -146,7 +148,7 @@ The implementation of the model consists of three main parts:
 
 ### Zonal Segmentation
 
-Prostate area is consist of peripharal zone (PZ), transition zone (TZ), central zone (CZ) and anterior fibromuscular stroma (AFS). Prostate cancer (PCa) lesions located in different zones have different characteristics. Moreover, approximately 70%-75% of PCa originate in the PZ and 20%-30% in the TZ [[1]](https://www.sciencedirect.com/science/article/pii/S0302283815008489). In this work, we trained a standard `3D nnU-Net` [[2]](https://link.springer.com/chapter/10.1007/978-3-030-87240-3_51) with external public datasets to generate binary prostate zonal anatomy masks (peripheral and rest (TZ, CZ, AFS) of the gland) as additional input information to guide the network to learn region-specific knowledge useful for clinically significant PCa (csPCa) detection and diagnosis.
+Prostate area is consist of peripharal zone (PZ), transition zone (TZ), central zone (CZ) and anterior fibromuscular stroma (AFS). Prostate cancer (PCa) lesions located in different zones have different characteristics. Moreover, approximately 70%-75% of PCa originate in the PZ and 20%-30% in the TZ [[1]](https://www.sciencedirect.com/science/article/pii/S0302283815008489). In this work, we trained a standard `3D nnU-Net` [[2]](https://www.nature.com/articles/s41592-020-01008-z) with external public datasets to generate binary prostate zonal anatomy masks (peripheral and rest (TZ, CZ, AFS) of the gland) as additional input information to guide the network to learn region-specific knowledge useful for clinically significant PCa (csPCa) detection and diagnosis.
 
 [→ Read the full documentation here](https://github.com/yuanyuan29/Z-SSMNet/blob/master/zonal_segmentation.md).
 
