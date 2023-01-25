@@ -23,7 +23,7 @@ from picai_prep import MHA2nnUNetConverter
 from picai_prep.examples.mha2nnunet.picai_archive import \
     generate_mha2nnunet_settings
 
-from z_ssmnet.splits.picai import \
+from z_ssmnet.splits.picai_nnunet import \
     nnunet_splits as picai_pub_splits
 
 """
@@ -55,7 +55,7 @@ def prepare_data(
     matrix_size: Optional[Iterable[int]] = None,
     preprocessing_kwargs: Optional[Dict[str, Any]] = None,
     splits: str = "picai_pub_nnunet",
-    task: str = "Task2302_z-nnmnet",
+    task: str = "Task2301_z-nnmnet",
 ):
 
     # prepare preprocessing kwargs
@@ -168,8 +168,8 @@ if __name__ == "__main__":
                             "E.g.: `{"crop_only": true}`. Must be valid json.')
     parser.add_argument("--splits", type=str, default="picai_pub_nnunet",
                         help="Splits to save for cross-validation.")
-    parser.add_argument("--task", type=str, default="Task2302_z-nnmnet",
-                        help="Task name (default: Task2302_z-nnmnet)")
+    parser.add_argument("--task", type=str, default="Task2301_z-nnmnet",
+                        help="Task name (default: Task2301_z-nnmnet)")
     try:
         args = parser.parse_args()
     except Exception as e:
