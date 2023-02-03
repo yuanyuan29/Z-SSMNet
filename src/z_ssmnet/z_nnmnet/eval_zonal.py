@@ -154,11 +154,11 @@ def evaluate(
 
             # pad raw npz predictions to their original extent
             print("Converting nnU-Net predictions to original extent...")
-            # with Pool() as pool:
-            #     pool.map(
-            #         func=convert_cropped_npz_to_original_nifty,
-            #         iterable=original_softmax_prediction_paths,
-            #     )
+            with Pool() as pool:
+                pool.map(
+                    func=convert_cropped_npz_to_original_nifty,
+                    iterable=original_softmax_prediction_paths,
+                )
 
             # postprocess softmax predictions
             print("Postprocessing softmax predictions...")
