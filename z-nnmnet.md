@@ -12,9 +12,9 @@ The changes we have made include:
 
 ### Z-nnMNet - Docker Setup
 
-To run the commands, you can use the Docker specified in [`z_nnmnet/training_docker/`](src/picai_baseline/nnunet/training_docker/). This Docker container shows how custom nnU-Net trainers can be implemented (shown for `MNet_myTrainer_zonal.py`).
+To run the commands, you can use the Docker specified in [`z_nnmnet/training_docker/`](https://github.com/yuanyuan29/Z-SSMNet/tree/master/src/z_ssmnet/z_nnmnet/training_docker). This Docker container shows how custom nnU-Net trainers can be implemented (shown for `MNet_myTrainer_zonal.py`).
 
-To build the Docker container, navigate to [`z_nnmnet/training_docker/`](src/picai_baseline/nnunet/training_docker/) and build the container:
+To build the Docker container, navigate to [`z_nnmnet/training_docker/`](https://github.com/yuanyuan29/Z-SSMNet/tree/master/src/z_ssmnet/z_nnmnet/training_docker) and build the container:
 
 ```shell
 cd src/z_ssmnet/z_nnmnet/training_docker/
@@ -102,13 +102,23 @@ The Z-nnMNet framework generates _softmax predictions_, while we need _detection
 
 The Z-nnMNet softmax predictions (saved as .npz files) cannot be used directly, because these pertain to the cropped/preprocessed images, instead of the original images. We use the helper function in [picai_baseline/nnunet/softmax_export.py](https://github.com/DIAGNijmegen/picai_baseline/blob/main/src/picai_baseline/nnunet/softmax_export.py) to convert a cropped prediction to its original extent.
 
-All of the above steps are combined in [z_ssmnet/z_nnmnet/eval.py](https://github.com/DIAGNijmegen/picai_baseline/blob/main/src/picai_baseline/nnunet/eval.py), enabling evaluation with Docker:
+All of the above steps are combined in [z_ssmnet/z_nnmnet/eval.py](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/z_nnmnet/eval.py), enabling evaluation with Docker:
 
 ```bash
 docker run --cpus=4 --memory=16gb --rm -v /path/to/workdir/:/workdir -v /path/to/repos/:/repos yuanyuan29/z-ssmnet:latest python3 /repos/Z-SSMNet/src/z_ssmnet/z_nnmnet/eval.py --task=Task2302_z-nnmnet
 ```
 
-The metrics will be displayed in the command line and stored to `metrics-{checkpoint}-{threshold}.json` (by default in `/path/to/workdir/results/nnUNet/3d_fullres/Task2302_z-nnmnet/myTrainer_zonal__nnUNetPlansv2.1/fold_[0,1,2,3,4]`). To see additional options and default parameters, please refer to the command line help (`python src/z_ssmnet/z_nnmnet/eval.py -h`) or the [source code]().
+The metrics will be displayed in the command line and stored to `metrics-{checkpoint}-{threshold}.json` (by default in `/path/to/workdir/results/nnUNet/3d_fullres/Task2302_z-nnmnet/myTrainer_zonal__nnUNetPlansv2.1/fold_[0,1,2,3,4]`). To see additional options and default parameters, please refer to the command line help (`python src/z_ssmnet/z_nnmnet/eval.py -h`) or the [source code](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/z_nnmnet/eval.py).
+
+To further facilitate false positive reduction, we exclude candidate lesions selected by the [dynamic lesion extraction method](https://github.com/DIAGNijmegen/Report-Guided-Annotation/blob/main/src/report_guided_annotation/extract_lesion_candidates.py) that do not originate from the prostate area. The prostate area is roughly regarded as the composition of zonal masks.
+
+All of the steps for evaluation are combined in [z_ssmnet/z_nnmnet/eval_zonal.py](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/z_nnmnet/eval_zonal.py), enabling evaluation with Docker:
+
+```bash
+docker run --cpus=4 --memory=16gb --rm -v /path/to/workdir/:/workdir -v /path/to/repos/:/repos yuanyuan29/z-ssmnet:latest python3 /repos/Z-SSMNet/src/z_ssmnet/z_nnmnet/eval_zonal.py --task=Task2302_z-nnmnet
+```
+
+The metrics will be displayed in the command line and stored to `metrics-{checkpoint}-{threshold}-zonal.json` (by default in `/path/to/workdir/results/nnUNet/3d_fullres/Task2302_z-nnmnet/myTrainer_zonal__nnUNetPlansv2.1/fold_[0,1,2,3,4]`). To see additional options and default parameters, please refer to the command line help (`python src/z_ssmnet/z_nnmnet/eval_zonal.py -h`) or the [source code](https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/z_nnmnet/eval_zonal.py).
 
 To load the metrics for subsequent analysis, we recommend loading the metrics using `picai_eval`, this allows on-the-fly calculation of metrics (described in more detail [here](https://github.com/DIAGNijmegen/picai_eval#accessing-metrics-after-evaluation)):
 
