@@ -34,7 +34,8 @@ RUN SITE_PKG=`pip3 show nnunet | grep "Location:" | awk '{print $2}'` && \
 RUN pip3 install \
     picai_eval>=1.4.4 \
     picai_prep>=2.1.2 \
-    picai_baseline>=0.8.1
+    picai_baseline>=0.8.1 \
+    mlxtend==0.19.0
 
 # Install SSL required modules
 RUN pip3 install tensorboard 
