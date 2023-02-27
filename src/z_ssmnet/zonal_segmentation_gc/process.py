@@ -113,6 +113,8 @@ class ProstateSegmentationAlgorithm(SegmentationAlgorithm):
             task="Task990_prostate_zonal_Seg",
             trainer="nnUNetTrainerV2",
             checkpoint="model_final_checkpoint",
+            folds="0",
+            store_probability_maps=False,
         )
 
         # read binarized and postprocessed prediction
