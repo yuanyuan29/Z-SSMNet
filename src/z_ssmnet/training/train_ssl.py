@@ -22,7 +22,7 @@ from pathlib import Path
 from z_ssmnet.ssl.pretrain.ssl_mnet_zonal import pretrain
 
 
-def main(taskname="Task2302_z-nnmnet"):
+def main():
     """Pretrain nnU-Net model."""
     parser = argparse.ArgumentParser()
 
