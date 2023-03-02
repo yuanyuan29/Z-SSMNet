@@ -41,7 +41,7 @@ def main(taskname="Task2302_z-nnmnet"):
     parser.add_argument('--imagesdir', type=str, default=os.environ.get('SM_CHANNEL_IMAGES', "/input/images"))
     parser.add_argument('--labelsdir', type=str, default=os.environ.get('SM_CHANNEL_LABELS', "/input/picai_labels"))
     parser.add_argument('--outputdir', type=str, default=os.environ.get('SM_MODEL_DIR', "/output"))
-    parser.add_argument('--splits', type=str, default="picai_pubpriv",
+    parser.add_argument('--splits', type=str, default="picai_pub",
                         help="Cross-validation splits. Can be a path to a json file or one of the predefined splits: "
                              "picai_pub, picai_pubpriv, picai_pub_nnunet, picai_pubpriv_nnunet, picai_debug.")
     parser.add_argument('--nnUNet_tf', type=int, default=8, help="Number of preprocessing threads for full images")
