@@ -21,15 +21,6 @@ from subprocess import check_call
 
 from picai_baseline.prepare_data_semi_supervised import \
     prepare_data_semi_supervised
-from picai_baseline.splits.picai import nnunet_splits as picai_pub_splits
-from picai_baseline.splits.picai_debug import \
-    nnunet_splits as picai_debug_splits
-from picai_baseline.splits.picai_nnunet import \
-    nnunet_splits as picai_pub_nnunet_splits
-from picai_baseline.splits.picai_pubpriv import \
-    nnunet_splits as picai_pubpriv_splits
-from picai_baseline.splits.picai_pubpriv_nnunet import \
-    nnunet_splits as picai_pubpriv_nnunet_splits
 
 
 def main(taskname="Task2302_z-nnmnet"):
