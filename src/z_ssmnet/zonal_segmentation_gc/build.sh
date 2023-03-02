@@ -2,5 +2,5 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 docker build "$SCRIPTPATH" \
-    -t yuanyuan29/z_ssmnet_prostate_segmentation_processor:latest \
-    -t yuanyuan29/z_ssmnet_prostate_segmentation_processor:v1.0
+    -t z_ssmnet_prostate_zonal_segmentation_processor:latest \
+    -t z_ssmnet_prostate_zonal_segmentation_processor:v1.0
