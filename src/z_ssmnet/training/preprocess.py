@@ -96,7 +96,7 @@ def main(taskname="Task2302_z-nnmnet"):
     cmd = [
         "nnunet", "plan_train", str(taskname), workdir.as_posix(),
         "--custom_split", str(splits_path),
-        "--plan_only",
+        "--plan_only", "--dont_copy_preprocessed_data",
     ]
     check_call(cmd)
 
