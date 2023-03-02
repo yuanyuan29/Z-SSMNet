@@ -46,12 +46,17 @@ def main(taskname="Task2302_z-nnmnet"):
     labels_dir = Path(args.labelsdir)
     output_dir = Path(args.outputdir)
     splits_path = workdir / f"nnUNet_raw_data/{taskname}/splits.json"
+    zonal_mask_path = labels_dir / "anatomical_delineations/zonal_pz_tz/AI/Yuan23"
+    nnUNet_prep_dir = output_dir / "nnUNet_preprocessed"
+
+    if not zonal_mask_path.is_dir():
+        raise ValueError(f"Zonal masks not found at {zonal_mask_path}!")
 
     workdir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # set environment variables
-    os.environ["prepdir"] = str(output_dir / "nnUNet_preprocessed")
+    os.environ["prepdir"] = str(nnUNet_prep_dir)
 
     # set nnU-Net's number of preprocessing threads
     os.environ["nnUNet_tf"] = str(args.nnUNet_tf)
@@ -80,7 +85,7 @@ def main(taskname="Task2302_z-nnmnet"):
     # Preprocess data for pretraining
     data_preprocessing_zonal(
         images_path=workdir / "nnUNet_raw_data" / taskname / "imagesTr",
-        zonal_mask_path=labels_dir / "anatomical_delineations/zonal_pz_tz/AI/Yuan23",
+        zonal_mask_path=zonal_mask_path,
         output_path=output_dir / "SSL/data",
         splits_path=splits_path
     )
