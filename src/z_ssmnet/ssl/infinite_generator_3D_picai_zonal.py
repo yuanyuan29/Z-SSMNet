@@ -36,8 +36,8 @@ def make_cubes(
     input_deps: int = 16,
     crop_rows: int = 64,
     crop_cols: int = 64,
-    data: str = "/workdir/SSL/data",
-    save: str = "/workdir/SSL/generated_cubes",
+    data_dir: str = "/workdir/SSL/data",
+    save_dir: str = "/workdir/SSL/generated_cubes",
     scale: int = 12,
 ):
     sys.setrecursionlimit(40000)
@@ -45,12 +45,15 @@ def make_cubes(
     seed = 1
     random.seed(seed)
 
-    assert data is not None
-    assert save is not None
-    assert fold >= 0 and fold <= 5
+    if data_dir is None or not os.path.isdir(data_dir):
+        raise ValueError(f"data_dir is not a valid directory: {data_dir}")
+    if save_dir is None:
+        raise ValueError(f"save_dir must be set: {save_dir}")
+    if fold < 0 or fold > 5:
+        raise ValueError(f"fold must be in [0, 5]: {fold}")
 
-    if not os.path.exists(save):
-        os.makedirs(save)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
 
     class setup_config():
         adc_max = 3000.0
@@ -99,7 +102,7 @@ def make_cubes(
                         scale=scale,
                         len_border=0,
                         len_border_z=0,
-                        DATA_DIR=data,
+                        DATA_DIR=data_dir,
                         )
     config.display()
 
@@ -190,7 +193,7 @@ def make_cubes(
     print(">> Fold {}".format(fold))
     cube = get_self_learning_data([fold], config)
     print("cube: {} | {:.2f} ~ {:.2f}".format(cube.shape, np.min(cube), np.max(cube)))
-    np.save(os.path.join(save, 
+    np.save(os.path.join(save_dir, 
                         "bat_"+str(config.scale)+"_s"+
                         "_"+str(config.input_rows)+
                         "x"+str(config.input_cols)+
@@ -221,7 +224,7 @@ if __name__ == "__main__":
         input_deps=options.input_deps,
         crop_rows=options.crop_rows,
         crop_cols=options.crop_cols,
-        data=options.data,
-        save=options.save,
+        data_dir=options.data,
+        save_dir=options.save,
         scale=options.scale,
     )
