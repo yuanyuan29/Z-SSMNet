@@ -21,6 +21,7 @@ from picai_baseline.prepare_data_semi_supervised import \
     prepare_data_semi_supervised
 
 from z_ssmnet.ssl.data_preprocessing_zonal import data_preprocessing_zonal
+from z_ssmnet.z_nnmnet.zonal_mask_npz import prepare_zonal_mask_npz
 
 
 def main(taskname="Task2302_z-nnmnet"):
@@ -98,6 +99,13 @@ def main(taskname="Task2302_z-nnmnet"):
         "--plan_only",
     ]
     check_call(cmd)
+
+    # Prepare zonal masks for Z-SSMNet
+    print("Preparing zonal masks for Z-SSMNet...")
+    prepare_zonal_mask_npz(
+        data_path=zonal_mask_path,
+        save_path=nnUNet_prep_dir / taskname / 'nnUNetData_plans_v2.1_stage0',
+    )
 
 
 if __name__ == '__main__':
