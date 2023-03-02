@@ -20,6 +20,8 @@ import shutil
 from pathlib import Path
 from subprocess import check_call
 
+from z_ssmnet.ssl.pretrain.ssl_mnet_zonal import pretrain
+
 
 def main(taskname="Task2302_z-nnmnet"):
     """Pretrain nnU-Net model."""
@@ -54,37 +56,14 @@ def main(taskname="Task2302_z-nnmnet"):
     print(f"labels_dir: {labels_dir}")
     print(f"output_dir: {output_dir}")
 
-    print("Images folder:", os.listdir(images_dir))
-    print("Labels folder:", os.listdir(labels_dir))
+    # Pretrain model
+    pretrain(
+        model_dir=checkpoints_dir / "SSL/pretrained_weights",
+        data_dir=preprocessed_dir / "SSL/data",
+    )
 
-    # Train models
-    for fold in args.folds:
-        print(f"Training fold {fold}...")
-        cmd = [
-            "nnunet", "plan_train", str(taskname), workdir.as_posix(),
-            "--results", checkpoints_dir.as_posix(),
-            "--trainer", "nnUNetTrainerV2_Loss_FL_and_CE_checkpoints",
-            "--fold", str(fold),
-            "--custom_split", os.path.join(os.environ["prepdir"], taskname, "splits_final.json"),
-            "--kwargs=--disable_validation_inference",
-            "--use_compressed_data",
-        ]
-        check_call(cmd)
-
-    # Export trained models
-    results_dir = checkpoints_dir / f"nnUNet/3d_fullres/{taskname}/nnUNetTrainerV2_Loss_FL_and_CE_checkpoints__nnUNetPlansv2.1"
-    export_dir = output_dir / f"picai_nnunet_gc_algorithm/results/nnUNet/3d_fullres/{taskname}/nnUNetTrainerV2_Loss_FL_and_CE_checkpoints__nnUNetPlansv2.1"
-    for fold in args.folds:
-        src = results_dir / f"fold_{fold}/model_best.model"
-        dst = export_dir / f"fold_{fold}/model_best.model"
-        dst.mkdir(parents=True, exist_ok=True)
-        shutil.copy(src, dst)
-
-        src = results_dir / f"fold_{fold}/model_best.model.pkl"
-        dst = export_dir / f"fold_{fold}/model_best.model.pkl"
-        shutil.copy(src, dst)
-
-    shutil.copy(results_dir / "plans.pkl", export_dir / "plans.pkl")
+    # Export trained model
+    shutil.copytree(checkpoints_dir / "SSL/pretrained_weights", output_dir / "SSL/pretrained_weights")
 
 
 if __name__ == '__main__':
