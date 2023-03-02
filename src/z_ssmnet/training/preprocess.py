@@ -45,11 +45,10 @@ def main(taskname="Task2302_z-nnmnet"):
     images_dir = Path(args.imagesdir)
     labels_dir = Path(args.labelsdir)
     output_dir = Path(args.outputdir)
-    splits_path = workdir / f"splits/{taskname}/splits.json"
+    splits_path = workdir / f"nnUNet_raw_data/{taskname}/splits.json"
 
     workdir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
-    splits_path.parent.mkdir(parents=True, exist_ok=True)
 
     # set environment variables
     os.environ["prepdir"] = str(workdir / "nnUNet_preprocessed")
