@@ -22,6 +22,8 @@ from subprocess import check_call
 from picai_baseline.prepare_data_semi_supervised import \
     prepare_data_semi_supervised
 
+from z_ssmnet.ssl.data_preprocessing_zonal import data_preprocessing_zonal
+
 
 def main(taskname="Task2302_z-nnmnet"):
     """Preprocess data for Z-SSMNet model training."""
@@ -75,6 +77,14 @@ def main(taskname="Task2302_z-nnmnet"):
         labelsdir=labels_dir,
         splits=args.splits,
         task=taskname,
+    )
+
+    # Preprocess data for pretraining
+    data_preprocessing_zonal(
+        images_path=workdir / "nnUNet_raw_data" / taskname / "imagesTr",
+        zonal_mask_path=labels_dir / "anatomical_delineations/zonal_pz_tz/AI/Yuan23",
+        output_path=output_dir / "SSL/data",
+        splits_path=splits_path
     )
 
     # Preprocess data with nnU-Net
