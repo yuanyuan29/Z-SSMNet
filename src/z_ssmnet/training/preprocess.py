@@ -83,7 +83,6 @@ def main(taskname="Task2302_z-nnmnet"):
         workdir=workdir,
         imagesdir=images_dir,
         labelsdir=labels_dir,
-        preprocessing_kwargs='{"physical_size": [81.0, 192.0, 192.0], "crop_only": true}',
         splits="picai_pubpriv",
     )
 
