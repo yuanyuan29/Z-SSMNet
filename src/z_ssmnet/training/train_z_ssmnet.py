@@ -54,6 +54,7 @@ def main(taskname="Task2302_z-nnmnet"):
 
     # descibe input data
     print(f"workdir: {workdir}")
+    print(f"checkpoints_dir: {checkpoints_dir}")
     print(f"preprocessed_dir: {preprocessed_dir}")
     print(f"pretrainedweights_dir: {pretrainedweights_dir}")
     print(f"output_dir: {output_dir}")
