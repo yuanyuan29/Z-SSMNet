@@ -69,7 +69,7 @@ def main(taskname="Task2302_z-nnmnet"):
         cmd = [
             "nnunet", "plan_train", str(taskname), workdir.as_posix(),
             "--results", checkpoints_dir.as_posix(),
-            "--trainer", "nnUNetTrainerV2_Loss_FL_and_CE_checkpoints",
+            "--trainer", "myTrainer_zonal",
             "--fold", str(fold),
             "--custom_split", os.path.join(os.environ["prepdir"], taskname, "splits_final.json"),
             "--kwargs=--disable_validation_inference",
@@ -78,8 +78,8 @@ def main(taskname="Task2302_z-nnmnet"):
         check_call(cmd)
 
     # Export trained models
-    results_dir = checkpoints_dir / f"nnUNet/3d_fullres/{taskname}/nnUNetTrainerV2_Loss_FL_and_CE_checkpoints__nnUNetPlansv2.1"
-    export_dir = output_dir / f"picai_nnunet_gc_algorithm/results/nnUNet/3d_fullres/{taskname}/nnUNetTrainerV2_Loss_FL_and_CE_checkpoints__nnUNetPlansv2.1"
+    results_dir = checkpoints_dir / f"nnUNet/3d_fullres/{taskname}/myTrainer_zonal__nnUNetPlansv2.1"
+    export_dir = output_dir / f"picai_nnunet_gc_algorithm/results/nnUNet/3d_fullres/{taskname}/myTrainer_zonal__nnUNetPlansv2.1"
     for fold in args.folds:
         src = results_dir / f"fold_{fold}/model_best.model"
         dst = export_dir / f"fold_{fold}/model_best.model"
