@@ -29,31 +29,28 @@ from optparse import OptionParser
 from glob import glob
 
 
-def make_cubes():
+def make_cubes(
+    fold: int = 0,
+    input_rows: int = 64,
+    input_cols: int = 64,
+    input_deps: int = 16,
+    crop_rows: int = 64,
+    crop_cols: int = 64,
+    data: str = "/workdir/SSL/data",
+    save: str = "/workdir/SSL/generated_cubes",
+    scale: int = 12,
+):
     sys.setrecursionlimit(40000)
-
-    parser = OptionParser()
-    parser.add_option("--fold", dest="fold", help="fold of subset", default=None, type="int")
-    parser.add_option("--input_rows", dest="input_rows", help="input rows", default=64, type="int")
-    parser.add_option("--input_cols", dest="input_cols", help="input cols", default=64, type="int")
-    parser.add_option("--input_deps", dest="input_deps", help="input deps", default=16, type="int")
-    parser.add_option("--crop_rows", dest="crop_rows", help="crop rows", default=64, type="int")
-    parser.add_option("--crop_cols", dest="crop_cols", help="crop cols", default=64, type="int")
-    parser.add_option("--data", dest="data", help="the directory of picai dataset", default="/workdir/SSL/data", type="string")
-    parser.add_option("--save", dest="save", help="the directory of processed 3D cubes", default="/workdir/SSL/generated_cubes", type="string")
-    parser.add_option("--scale", dest="scale", help="scale of the generator", default=12, type="int")
-    (options, args) = parser.parse_args()
-    fold = options.fold
 
     seed = 1
     random.seed(seed)
 
-    assert options.data is not None
-    assert options.save is not None
-    assert options.fold >= 0 and options.fold <= 5
+    assert data is not None
+    assert save is not None
+    assert fold >= 0 and fold <= 5
 
-    if not os.path.exists(options.save):
-        os.makedirs(options.save)
+    if not os.path.exists(save):
+        os.makedirs(save)
 
     class setup_config():
         adc_max = 3000.0
@@ -94,15 +91,15 @@ def make_cubes():
             print("\n")
 
 
-    config = setup_config(input_rows=options.input_rows,
-                        input_cols=options.input_cols,
-                        input_deps=options.input_deps,
-                        crop_rows=options.crop_rows,
-                        crop_cols=options.crop_cols,
-                        scale=options.scale,
+    config = setup_config(input_rows=input_rows,
+                        input_cols=input_cols,
+                        input_deps=input_deps,
+                        crop_rows=crop_rows,
+                        crop_cols=crop_cols,
+                        scale=scale,
                         len_border=0,
                         len_border_z=0,
-                        DATA_DIR=options.data,
+                        DATA_DIR=data,
                         )
     config.display()
 
@@ -193,7 +190,7 @@ def make_cubes():
     print(">> Fold {}".format(fold))
     cube = get_self_learning_data([fold], config)
     print("cube: {} | {:.2f} ~ {:.2f}".format(cube.shape, np.min(cube), np.max(cube)))
-    np.save(os.path.join(options.save, 
+    np.save(os.path.join(save, 
                         "bat_"+str(config.scale)+"_s"+
                         "_"+str(config.input_rows)+
                         "x"+str(config.input_cols)+
@@ -204,4 +201,27 @@ def make_cubes():
 
 
 if __name__ == "__main__":
-    make_cubes()
+    # parse options
+    parser = OptionParser()
+    parser.add_option("--fold", dest="fold", help="fold of subset", default=None, type="int")
+    parser.add_option("--input_rows", dest="input_rows", help="input rows", default=64, type="int")
+    parser.add_option("--input_cols", dest="input_cols", help="input cols", default=64, type="int")
+    parser.add_option("--input_deps", dest="input_deps", help="input deps", default=16, type="int")
+    parser.add_option("--crop_rows", dest="crop_rows", help="crop rows", default=64, type="int")
+    parser.add_option("--crop_cols", dest="crop_cols", help="crop cols", default=64, type="int")
+    parser.add_option("--data", dest="data", help="the directory of picai dataset", default="/workdir/SSL/data", type="string")
+    parser.add_option("--save", dest="save", help="the directory of processed 3D cubes", default="/workdir/SSL/generated_cubes", type="string")
+    parser.add_option("--scale", dest="scale", help="scale of the generator", default=12, type="int")
+    (options, args) = parser.parse_args()
+
+    make_cubes(
+        fold=options.fold,
+        input_rows=options.input_rows,
+        input_cols=options.input_cols,
+        input_deps=options.input_deps,
+        crop_rows=options.crop_rows,
+        crop_cols=options.crop_cols,
+        data=options.data,
+        save=options.save,
+        scale=options.scale,
+    )
