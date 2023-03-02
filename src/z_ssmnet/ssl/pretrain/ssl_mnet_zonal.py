@@ -27,13 +27,13 @@ from MNet import MNet
 
 
 def pretrain(
-    
+    model_path="/workdir/SSL/pretrained_weights/",
+    data_dir="/workdir/SSL/generated_cubes",
 ):
     print("torch = {}".format(torch.__version__))
 
     seed = 1
     random.seed(seed)
-    model_path = "/workdir/SSL/pretrained_weights/"
     if not os.path.exists(model_path):
         os.makedirs(model_path)
     logs_path = os.path.join(model_path, "Logs")
@@ -47,13 +47,13 @@ def pretrain(
 
     x_train = []
     for i,fold in enumerate(tqdm(config.train_fold)):
-        s = np.load(os.path.join(config.DATA_DIR, "bat_"+str(config.scale)+"_s_64x64x16_"+str(fold)+".npy"))
+        s = np.load(os.path.join(data_dir, "bat_"+str(config.scale)+"_s_64x64x16_"+str(fold)+".npy"))
         x_train.extend(s)
     x_train = np.array(x_train)
 
     x_valid = []
     for i,fold in enumerate(tqdm(config.valid_fold)):
-        s = np.load(os.path.join(config.DATA_DIR, "bat_"+str(config.scale)+"_s_64x64x16_"+str(fold)+".npy"))
+        s = np.load(os.path.join(data_dir, "bat_"+str(config.scale)+"_s_64x64x16_"+str(fold)+".npy"))
         x_valid.extend(s)
     x_valid = np.array(x_valid)
 
