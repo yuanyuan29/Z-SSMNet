@@ -21,8 +21,8 @@ from pathlib import Path
 from subprocess import check_call
 
 
-def main(taskname="Task2203_picai_baseline"):
-    """Train nnU-Net semi-supervised model."""
+def main(taskname="Task2302_z-nnmnet"):
+    """Pretrain nnU-Net model."""
     parser = argparse.ArgumentParser()
 
     # input data and model directories
