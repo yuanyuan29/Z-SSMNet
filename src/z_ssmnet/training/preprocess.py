@@ -13,9 +13,7 @@
 #  limitations under the License.
 
 import argparse
-import json
 import os
-import shutil
 from pathlib import Path
 from subprocess import check_call
 
