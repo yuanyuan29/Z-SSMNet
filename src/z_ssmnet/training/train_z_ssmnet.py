@@ -30,6 +30,7 @@ def main(taskname="Task2302_z-nnmnet"):
     parser.add_argument('--imagesdir', type=str, default=os.environ.get('SM_CHANNEL_IMAGES', "/input/images"))
     parser.add_argument('--labelsdir', type=str, default=os.environ.get('SM_CHANNEL_LABELS', "/input/picai_labels"))
     parser.add_argument('--preprocesseddir', type=str, default=os.environ.get('SM_CHANNEL_PREPROCESSED', "/input/preprocessed"))
+    parser.add_argument('--pretrainedweightsdir', type=str, default=os.environ.get('SM_CHANNEL_PRETRAINED', "/input/pretrained"))
     parser.add_argument('--outputdir', type=str, default=os.environ.get('SM_MODEL_DIR', "/output"))
     parser.add_argument('--checkpointsdir', type=str, default="/checkpoints")
     parser.add_argument('--nnUNet_n_proc_DA', type=int, default=None)
@@ -45,6 +46,7 @@ def main(taskname="Task2302_z-nnmnet"):
     output_dir = Path(args.outputdir)
     checkpoints_dir = Path(args.checkpointsdir)
     preprocessed_dir = Path(args.preprocesseddir)
+    pretrainedweights_dir = Path(args.pretrainedweightsdir)
 
     workdir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -74,6 +76,7 @@ def main(taskname="Task2302_z-nnmnet"):
             "--custom_split", os.path.join(os.environ["prepdir"], taskname, "splits_final.json"),
             "--kwargs=--disable_validation_inference",
             "--use_compressed_data",
+            "--pretrained_weights", (pretrainedweights_dir / "ssl_mnet_zonal.model").as_posix(),
         ]
         check_call(cmd)
 
