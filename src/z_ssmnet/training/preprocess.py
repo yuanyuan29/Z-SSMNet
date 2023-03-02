@@ -83,7 +83,7 @@ def main(taskname="Task2302_z-nnmnet"):
         workdir=workdir,
         imagesdir=images_dir,
         labelsdir=labels_dir,
-        splits="picai_pubpriv",
+        splits=args.splits,
     )
 
     # Preprocess data with nnU-Net
