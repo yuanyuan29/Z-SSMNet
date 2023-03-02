@@ -32,8 +32,8 @@ from picai_baseline.splits.picai_pubpriv_nnunet import \
     nnunet_splits as picai_pubpriv_nnunet_splits
 
 
-def main(taskname="Task2203_picai_baseline"):
-    """Preprocess data for nnU-Net semi-supervised model."""
+def main(taskname="Task2302_z-nnmnet"):
+    """Preprocess data for Z-SSMNet model training."""
     parser = argparse.ArgumentParser()
 
     # input data and model directories
