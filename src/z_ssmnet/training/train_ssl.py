@@ -32,7 +32,6 @@ def main(taskname="Task2302_z-nnmnet"):
     parser.add_argument('--preprocesseddir', type=str, default=os.environ.get('SM_CHANNEL_PREPROCESSED', "/input/preprocessed"))
     parser.add_argument('--outputdir', type=str, default=os.environ.get('SM_MODEL_DIR', "/output"))
     parser.add_argument('--checkpointsdir', type=str, default="/checkpoints")
-    parser.add_argument('--nnUNet_n_proc_DA', type=int, default=None)
     parser.add_argument('--folds', type=int, nargs="+", default=(0, 1, 2, 3, 4),
                         help="Folds to train. Default: 0 1 2 3 4")
 
@@ -48,11 +47,6 @@ def main(taskname="Task2302_z-nnmnet"):
 
     workdir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    # set environment variables
-    os.environ["prepdir"] = (preprocessed_dir / "nnUNet_preprocessed").as_posix()
-    if args.nnUNet_n_proc_DA is not None:
-        os.environ["nnUNet_n_proc_DA"] = str(args.nnUNet_n_proc_DA)
 
     # descibe input data
     print(f"workdir: {workdir}")
