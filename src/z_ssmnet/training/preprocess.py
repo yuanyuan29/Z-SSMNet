@@ -53,7 +53,7 @@ def main(taskname="Task2302_z-nnmnet"):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # set environment variables
-    os.environ["prepdir"] = str(workdir / "nnUNet_preprocessed")
+    os.environ["prepdir"] = str(output_dir / "nnUNet_preprocessed")
 
     # set nnU-Net's number of preprocessing threads
     os.environ["nnUNet_tf"] = str(args.nnUNet_tf)
@@ -95,12 +95,6 @@ def main(taskname="Task2302_z-nnmnet"):
         "--plan_only",
     ]
     check_call(cmd)
-
-    # Export preprocessed dataset
-    print("Exporting preprocessed dataset...")
-    dst = output_dir / f"nnUNet_preprocessed/{taskname}/"
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(workdir / f"nnUNet_preprocessed/{taskname}/", dst)
 
 
 if __name__ == '__main__':
