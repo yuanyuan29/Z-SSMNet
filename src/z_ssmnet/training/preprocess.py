@@ -75,6 +75,7 @@ def main(taskname="Task2302_z-nnmnet"):
         imagesdir=images_dir,
         labelsdir=labels_dir,
         splits=args.splits,
+        task=taskname,
     )
 
     # Preprocess data with nnU-Net
