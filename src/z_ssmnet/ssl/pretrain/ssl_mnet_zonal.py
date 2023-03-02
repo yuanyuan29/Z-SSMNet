@@ -27,16 +27,16 @@ from MNet import MNet
 
 
 def pretrain(
-    model_path="/workdir/SSL/pretrained_weights/",
+    model_dir="/workdir/SSL/pretrained_weights/",
     data_dir="/workdir/SSL/generated_cubes",
 ):
     print("torch = {}".format(torch.__version__))
 
     seed = 1
     random.seed(seed)
-    if not os.path.exists(model_path):
-        os.makedirs(model_path)
-    logs_path = os.path.join(model_path, "Logs")
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+    logs_path = os.path.join(model_dir, "Logs")
     if not os.path.exists(logs_path):
         os.makedirs(logs_path)
 
@@ -181,8 +181,8 @@ def pretrain(
                 'epoch':epoch + 1,
                 'state_dict' : model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict()
-            },os.path.join(model_path, config.exp_name+".model"))
-            print("Saving model ",os.path.join(model_path, config.exp_name+".model"))
+            },os.path.join(model_dir, config.exp_name+".model"))
+            print("Saving model ",os.path.join(model_dir, config.exp_name+".model"))
 
         else:
             print("Validation loss does not decrease from {:.4f}, num_epoch_no_improvement {}".format(best_loss,num_epoch_no_improvement))
