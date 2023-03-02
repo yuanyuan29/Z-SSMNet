@@ -59,7 +59,7 @@ def main(taskname="Task2302_z-nnmnet"):
     # Pretrain model
     pretrain(
         model_dir=checkpoints_dir / "SSL/pretrained_weights",
-        data_dir=preprocessed_dir / "SSL/data",
+        data_dir=preprocessed_dir / "SSL/generated_cubes",
     )
 
     # Export trained model
