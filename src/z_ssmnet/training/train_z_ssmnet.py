@@ -83,15 +83,16 @@ def main(taskname="Task2302_z-nnmnet"):
     # Export trained models
     results_dir = checkpoints_dir / f"nnUNet/3d_fullres/{taskname}/myTrainer_zonal__nnUNetPlansv2.1"
     export_dir = output_dir / f"picai_nnunet_gc_algorithm/results/nnUNet/3d_fullres/{taskname}/myTrainer_zonal__nnUNetPlansv2.1"
-    for fold in args.folds:
-        src = results_dir / f"fold_{fold}/model_best.model"
-        dst = export_dir / f"fold_{fold}/model_best.model"
-        dst.mkdir(parents=True, exist_ok=True)
-        shutil.copy(src, dst)
+    for checkpoint in ["model_best", "model_final_checkpoint"]:
+        for fold in args.folds:
+            src = results_dir / f"fold_{fold}/{checkpoint}.model"
+            dst = export_dir / f"fold_{fold}/{checkpoint}.model"
+            dst.mkdir(parents=True, exist_ok=True)
+            shutil.copy(src, dst)
 
-        src = results_dir / f"fold_{fold}/model_best.model.pkl"
-        dst = export_dir / f"fold_{fold}/model_best.model.pkl"
-        shutil.copy(src, dst)
+            src = results_dir / f"fold_{fold}/{checkpoint}.model.pkl"
+            dst = export_dir / f"fold_{fold}/{checkpoint}.model.pkl"
+            shutil.copy(src, dst)
 
     shutil.copy(results_dir / "plans.pkl", export_dir / "plans.pkl")
 
