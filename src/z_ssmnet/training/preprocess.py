@@ -89,8 +89,8 @@ def main(taskname="Task2302_z-nnmnet"):
         images_path=workdir / "nnUNet_raw_data" / taskname / "imagesTr",
         zonal_mask_path=zonal_mask_path,
         splits_path=splits_path,
-        output_train_path=output_dir / "SSL/data/train",
-        output_val_path=output_dir / "SSL/data/val",
+        output_train_path=output_dir / "SSL/generated_cubes/train",
+        output_val_path=output_dir / "SSL/generated_cubes/val",
     )
 
     # Preprocess data with nnU-Net
