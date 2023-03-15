@@ -19,7 +19,7 @@ import os
 import shutil
 from pathlib import Path
 
-from z_ssmnet.ssl.pretrain.ssl_mnet_zonal import pretrain
+from z_ssmnet.ssl_read_data_from_disk.pretrain.ssl_mnet_zonal import pretrain
 
 
 def main():
