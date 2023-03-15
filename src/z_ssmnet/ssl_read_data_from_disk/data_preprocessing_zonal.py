@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import os
+from pathlib import Path
+from typing import Union
 import SimpleITK as sitk
 import numpy as np
 import argparse
@@ -77,7 +79,20 @@ def crop(t2, adc, dwi, seg):
     return cropped_t2, cropped_adc, cropped_dwi, cropped_seg
     
 
-def infinite_generator_from_one_volume(args, t2_array, adc_array, dwi_array, seg_array):
+def infinite_generator_from_one_volume(
+    t2_array: np.ndarray,
+    adc_array: np.ndarray,
+    dwi_array: np.ndarray,
+    seg_array: np.ndarray,
+    scale: int = 12,
+    input_rows: int = 64,
+    input_cols: int = 64,
+    input_deps: int = 16,
+    crop_rows: int = 64,
+    crop_cols: int = 64,
+    len_border: int = 0,
+    len_border_z: int = 0,
+):
     adc_max = 3000.0
     adc_min = 0.0
 
@@ -89,48 +104,160 @@ def infinite_generator_from_one_volume(args, t2_array, adc_array, dwi_array, seg
     adc_array = 1.0 * (adc_array - adc_min) / (adc_max - adc_min)
     dwi_array  = 1.0 * (dwi_array - np.min(dwi_array)) / (np.max(dwi_array) - np.min(dwi_array))
 
-    slice_set = np.zeros((args.scale, 4, args.input_rows, args.input_cols, args.input_deps), dtype=float)
+    slice_set = np.zeros((scale, 4, input_rows, input_cols, input_deps), dtype=float)
     
     num_pair = 0
     cnt = 0
     while True:
         cnt += 1
-        if cnt > 50 * args.scale and num_pair == 0:
+        if cnt > 50 * scale and num_pair == 0:
             return None
-        elif cnt > 50 * args.scale and num_pair > 0:
+        elif cnt > 50 * scale and num_pair > 0:
             return np.array(slice_set[:num_pair])
 
-        start_x = random.randint(0+args.len_border, size_x-args.crop_rows-1-args.len_border)
-        start_y = random.randint(0+args.len_border, size_y-args.crop_cols-1-args.len_border)
-        start_z = random.randint(0+args.len_border_z, size_z-args.input_deps-1-args.len_border_z)
+        start_x = random.randint(0+len_border, size_x-crop_rows-1-len_border)
+        start_y = random.randint(0+len_border, size_y-crop_cols-1-len_border)
+        start_z = random.randint(0+len_border_z, size_z-input_deps-1-len_border_z)
         
-        t2_crop_window = t2_array[start_x : start_x+args.crop_rows,
-                                  start_y : start_y+args.crop_cols,
-                                  start_z : start_z+args.input_deps,
+        t2_crop_window = t2_array[start_x : start_x+crop_rows,
+                                  start_y : start_y+crop_cols,
+                                  start_z : start_z+input_deps,
                                  ]
         
-        adc_crop_window = adc_array[start_x : start_x+args.crop_rows,
-                                    start_y : start_y+args.crop_cols,
-                                    start_z : start_z+args.input_deps,
+        adc_crop_window = adc_array[start_x : start_x+crop_rows,
+                                    start_y : start_y+crop_cols,
+                                    start_z : start_z+input_deps,
                                    ]
 
-        dwi_crop_window = dwi_array[start_x : start_x+args.crop_rows,
-                                    start_y : start_y+args.crop_cols,
-                                    start_z : start_z+args.input_deps,
+        dwi_crop_window = dwi_array[start_x : start_x+crop_rows,
+                                    start_y : start_y+crop_cols,
+                                    start_z : start_z+input_deps,
                                    ]
-        seg_crop_window = seg_array[start_x : start_x+args.crop_rows,
-                                    start_y : start_y+args.crop_cols, 
-                                    start_z : start_z+args.input_deps,
+        seg_crop_window = seg_array[start_x : start_x+crop_rows,
+                                    start_y : start_y+crop_cols, 
+                                    start_z : start_z+input_deps,
                                    ]
 
         crop_window = np.stack((t2_crop_window, adc_crop_window, dwi_crop_window, seg_crop_window), axis=0)        
         slice_set[num_pair] = crop_window
         
         num_pair += 1
-        if num_pair == args.scale:
+        if num_pair == scale:
             break
             
     return np.array(slice_set)
+
+
+def data_preprocessing_zonal(
+    images_path: Union[Path, str],
+    zonal_mask_path: Union[Path, str],
+    splits_path: Union[Path, str],
+    output_train_path: Union[Path, str],
+    output_val_path: Union[Path, str],
+    scale: int = 12,
+    input_rows: int = 64,
+    input_cols: int = 64,
+    input_deps: int = 16,
+    crop_rows: int = 64,
+    crop_cols: int = 64,
+    len_border: int = 0,
+    len_border_z: int = 0,
+):
+    if not os.path.exists(output_train_path):
+        os.makedirs(output_train_path)
+    if not os.path.exists(output_val_path):
+        os.makedirs(output_val_path)
+
+    # split data
+    random.seed(1)
+    train_ids = []
+    val_ids = []
+    with open(splits_path, 'r') as f:
+        splits = json.load(f)
+        for i in range(5):
+            val = splits[i]["val"]
+            random.shuffle(val)
+            train_ids.append(val[:int(len(val)*0.8)])
+            val_ids.append(val[int(len(val)*0.8):])
+
+    train_ids = reduce(lambda x,y: x.extend(y) or x, train_ids)
+    val_ids = reduce(lambda x,y: x.extend(y) or x, val_ids)
+
+    for id in tqdm(train_ids):
+        t2 = sitk.ReadImage(os.path.join(images_path, id + '_0000.nii.gz'), sitk.sitkFloat32)
+        adc = sitk.ReadImage(os.path.join(images_path, id + '_0001.nii.gz'), sitk.sitkFloat32)
+        dwi = sitk.ReadImage(os.path.join(images_path, id + '_0002.nii.gz'), sitk.sitkFloat32)
+        seg = sitk.ReadImage(os.path.join(zonal_mask_path, id + '.nii.gz'))
+
+        # image resample
+        t2 = resample(t2, mask=False)
+        adc = resample(adc, mask=False)
+        dwi = resample(dwi, mask=False)
+        seg = resample(seg, mask=True)
+
+        # crop the ROI 
+        t2, adc, dwi, seg = crop(t2, adc, dwi, seg)  
+
+        # extract sub-volumes
+        t2_array = sitk.GetArrayFromImage(t2)
+        t2_array = t2_array.transpose(2, 1, 0)
+
+        adc_array = sitk.GetArrayFromImage(adc)
+        adc_array = adc_array.transpose(2, 1, 0)
+
+        dwi_array = sitk.GetArrayFromImage(dwi)
+        dwi_array = dwi_array.transpose(2, 1, 0)
+
+        seg_array = sitk.GetArrayFromImage(seg)
+        seg_array = seg_array.transpose(2, 1, 0)
+
+        volumes = infinite_generator_from_one_volume(
+            t2_array, adc_array, dwi_array, seg_array,
+            scale, input_rows, input_cols, input_deps,
+            crop_rows, crop_cols, len_border, len_border_z,
+        )
+
+        for i in range(len(volumes)):
+            np.save(os.path.join(output_train_path, id + '_' + "%02d" % i + '.npy'), volumes[i])
+
+    for id in tqdm(val_ids):
+        t2 = sitk.ReadImage(os.path.join(images_path, id + '_0000.nii.gz'), sitk.sitkFloat32)
+        adc = sitk.ReadImage(os.path.join(images_path, id + '_0001.nii.gz'), sitk.sitkFloat32)
+        dwi = sitk.ReadImage(os.path.join(images_path, id + '_0002.nii.gz'), sitk.sitkFloat32)
+        seg = sitk.ReadImage(os.path.join(zonal_mask_path, id + '.nii.gz'))
+
+        # image resample
+        t2 = resample(t2, mask=False)
+        adc = resample(adc, mask=False)
+        dwi = resample(dwi, mask=False)
+        seg = resample(seg, mask=True)
+
+        # crop the ROI 
+        t2, adc, dwi, seg = crop(t2, adc, dwi, seg)  
+
+        # extract sub-volumes
+        t2_array = sitk.GetArrayFromImage(t2)
+        t2_array = t2_array.transpose(2, 1, 0)
+
+        adc_array = sitk.GetArrayFromImage(adc)
+        adc_array = adc_array.transpose(2, 1, 0)
+
+        dwi_array = sitk.GetArrayFromImage(dwi)
+        dwi_array = dwi_array.transpose(2, 1, 0)
+
+        seg_array = sitk.GetArrayFromImage(seg)
+        seg_array = seg_array.transpose(2, 1, 0)
+
+        volumes = infinite_generator_from_one_volume(
+            t2_array, adc_array, dwi_array, seg_array,
+            scale, input_rows, input_cols, input_deps,
+            crop_rows, crop_cols, len_border, len_border_z,
+        )
+
+        for i in range(len(volumes)):
+            np.save(os.path.join(output_val_path, id + '_' + "%02d" % i + '.npy'), volumes[i])
+
+    print('well done')
 
 
 if __name__ == "__main__":
@@ -154,94 +281,18 @@ if __name__ == "__main__":
     parser.add_argument('--num_workers', type=int, default=8)
     args = parser.parse_args()
 
-    if not os.path.exists(args.output_train_path):
-        os.makedirs(args.output_train_path)
-    if not os.path.exists(args.output_val_path):
-        os.makedirs(args.output_val_path)
-
-    # split data
-    random.seed(1)
-    train_ids = []
-    val_ids = []
-    with open(args.splits_path, 'r') as f:
-        splits = json.load(f)
-        for i in range(5):
-            val = splits[i]["val"]
-            random.shuffle(val)
-            train_ids.append(val[:int(len(val)*0.8)])
-            val_ids.append(val[int(len(val)*0.8):])
-
-    train_ids = reduce(lambda x,y: x.extend(y) or x, train_ids)
-    val_ids = reduce(lambda x,y: x.extend(y) or x, val_ids)
-
-    for id in tqdm(train_ids):
-        t2 = sitk.ReadImage(os.path.join(args.images_path, id + '_0000.nii.gz'), sitk.sitkFloat32)
-        adc = sitk.ReadImage(os.path.join(args.images_path, id + '_0001.nii.gz'), sitk.sitkFloat32)
-        dwi = sitk.ReadImage(os.path.join(args.images_path, id + '_0002.nii.gz'), sitk.sitkFloat32)
-        seg = sitk.ReadImage(os.path.join(args.zonal_mask_path, id + '.nii.gz'))
-
-        # image resample
-        t2 = resample(t2, mask=False)
-        adc = resample(adc, mask=False)
-        dwi = resample(dwi, mask=False)
-        seg = resample(seg, mask=True)
-
-        # crop the ROI 
-        t2, adc, dwi, seg = crop(t2, adc, dwi, seg)  
-
-        # extract sub-volumes
-        t2_array = sitk.GetArrayFromImage(t2)
-        t2_array = t2_array.transpose(2, 1, 0)
-
-        adc_array = sitk.GetArrayFromImage(adc)
-        adc_array = adc_array.transpose(2, 1, 0)
-
-        dwi_array = sitk.GetArrayFromImage(dwi)
-        dwi_array = dwi_array.transpose(2, 1, 0)
-
-        seg_array = sitk.GetArrayFromImage(seg)
-        seg_array = seg_array.transpose(2, 1, 0)
-
-        volumes = infinite_generator_from_one_volume(args, t2_array, adc_array, dwi_array, seg_array)
-
-        for i in range(len(volumes)):
-            np.save(os.path.join(args.output_train_path, id + '_' + "%02d" % i + '.npy'), volumes[i])
-        
-    
-        
-    for id in tqdm(val_ids):
-        t2 = sitk.ReadImage(os.path.join(args.images_path, id + '_0000.nii.gz'), sitk.sitkFloat32)
-        adc = sitk.ReadImage(os.path.join(args.images_path, id + '_0001.nii.gz'), sitk.sitkFloat32)
-        dwi = sitk.ReadImage(os.path.join(args.images_path, id + '_0002.nii.gz'), sitk.sitkFloat32)
-        seg = sitk.ReadImage(os.path.join(args.zonal_mask_path, id + '.nii.gz'))
-
-        # image resample
-        t2 = resample(t2, mask=False)
-        adc = resample(adc, mask=False)
-        dwi = resample(dwi, mask=False)
-        seg = resample(seg, mask=True)
-
-        # crop the ROI 
-        t2, adc, dwi, seg = crop(t2, adc, dwi, seg)  
-
-        # extract sub-volumes
-        t2_array = sitk.GetArrayFromImage(t2)
-        t2_array = t2_array.transpose(2, 1, 0)
-
-        adc_array = sitk.GetArrayFromImage(adc)
-        adc_array = adc_array.transpose(2, 1, 0)
-
-        dwi_array = sitk.GetArrayFromImage(dwi)
-        dwi_array = dwi_array.transpose(2, 1, 0)
-
-        seg_array = sitk.GetArrayFromImage(seg)
-        seg_array = seg_array.transpose(2, 1, 0)
-
-        volumes = infinite_generator_from_one_volume(args, t2_array, adc_array, dwi_array, seg_array)
-
-        for i in range(len(volumes)):
-            np.save(os.path.join(args.output_val_path, id + '_' + "%02d" % i + '.npy'), volumes[i])
-
-
-    print('well done')
-
+    data_preprocessing_zonal(
+        images_path=args.images_path,
+        zonal_mask_path=args.zonal_mask_path,
+        splits_path=args.splits_path,
+        output_train_path=args.output_train_path,
+        output_val_path=args.output_val_path,
+        scale=args.scale,
+        input_rows=args.input_rows,
+        input_cols=args.input_cols,
+        input_deps=args.input_deps,
+        crop_rows=args.crop_rows,
+        crop_cols=args.crop_cols,
+        len_border=args.len_border,
+        len_border_z=args.len_border_z,
+    )

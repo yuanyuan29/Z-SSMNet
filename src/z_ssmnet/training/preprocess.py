@@ -20,9 +20,9 @@ from subprocess import check_call
 from picai_baseline.prepare_data_semi_supervised import \
     prepare_data_semi_supervised
 
-from z_ssmnet.ssl.data_preprocessing_zonal import data_preprocessing_zonal
+from z_ssmnet.ssl_read_data_from_disk.data_preprocessing_zonal import \
+    data_preprocessing_zonal
 from z_ssmnet.z_nnmnet.zonal_mask_npz import prepare_zonal_mask_npz
-from z_ssmnet.ssl.infinite_generator_3D_picai_zonal import make_cubes
 
 
 def main(taskname="Task2302_z-nnmnet"):
@@ -88,19 +88,10 @@ def main(taskname="Task2302_z-nnmnet"):
     data_preprocessing_zonal(
         images_path=workdir / "nnUNet_raw_data" / taskname / "imagesTr",
         zonal_mask_path=zonal_mask_path,
-        output_path=workdir / "SSL/data",
-        splits_path=splits_path
+        splits_path=splits_path,
+        output_train_path=output_dir / "SSL/generated_cubes/train",
+        output_val_path=output_dir / "SSL/generated_cubes/val",
     )
-
-    # Generate cubes for pretraining
-    for subset in range(5+1):
-        print(f"Generating cubes for subset {subset}...")
-        make_cubes(
-            fold=subset,
-            data_dir=str(workdir / "SSL/data"),
-            save_dir=str(output_dir / "SSL/generated_cubes"),
-            scale=12,
-        )
 
     # Preprocess data with nnU-Net
     print("Preprocessing data with nnU-Net...")
