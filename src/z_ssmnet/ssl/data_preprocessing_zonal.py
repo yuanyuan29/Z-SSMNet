@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import SimpleITK as sitk
-import numpy as np
 import argparse
 import glob
-import random
 import json
+import os
+import random
 from functools import reduce
+
+import numpy as np
+import SimpleITK as sitk
+
 
 def resample(vol, mask=True, new_spacing=[0.5, 0.5, 3.0]):
     # Determine current pixel spacing
@@ -76,18 +78,16 @@ def crop(t2, adc, dwi, seg):
     return cropped_t2, cropped_adc, cropped_dwi, cropped_seg
     
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--images_path', type=str, default='/workdir/nnUNet_raw_data/Task2302_z-nnmnet/imagesTr')
-    parser.add_argument('--zonal_mask_path', type=str, default='/workdir/results/nnUNet/3d_fullres/Task990_prostate_zonal_Seg/nnUNetTrainerV2__nnUNetPlansv2.1/fold_0/predictions_post')
-    parser.add_argument('--output_path', type=str, default='/workdir/SSL/data')
-    parser.add_argument('--splits_path', type=str, default='/workdir/nnUNet_raw_data/Task2302_z-nnmnet/splits.json')
-    args = parser.parse_args()
-
+def data_preprocessing_zonal(
+    images_path,
+    zonal_mask_path,
+    output_path,
+    splits_path,
+):
     # split data
     random.seed(1)
     folds = [[] for _ in range(6)] 
-    with open(args.splits_path, 'r') as f:
+    with open(splits_path, 'r') as f:
         splits = json.load(f)
         for i in range(5):
             val = splits[i]["val"]
@@ -103,13 +103,13 @@ if __name__ == "__main__":
     f5 = reduce(lambda x,y: x.extend(y) or x, folds[5])
 
     # read images
-    images = glob.glob(os.path.join(args.images_path, '*_0000.nii.gz'))
+    images = glob.glob(os.path.join(images_path, '*_0000.nii.gz'))
     for image in images:
         case_id = image.split('/')[-1][:13]
-        t2 = sitk.ReadImage(os.path.join(args.images_path, case_id + '_0000.nii.gz'), sitk.sitkFloat32)
-        adc = sitk.ReadImage(os.path.join(args.images_path, case_id + '_0001.nii.gz'), sitk.sitkFloat32)
-        dwi = sitk.ReadImage(os.path.join(args.images_path, case_id + '_0002.nii.gz'), sitk.sitkFloat32)
-        seg = sitk.ReadImage(os.path.join(args.zonal_mask_path, case_id + '.nii.gz'))
+        t2 = sitk.ReadImage(os.path.join(images_path, case_id + '_0000.nii.gz'), sitk.sitkFloat32)
+        adc = sitk.ReadImage(os.path.join(images_path, case_id + '_0001.nii.gz'), sitk.sitkFloat32)
+        dwi = sitk.ReadImage(os.path.join(images_path, case_id + '_0002.nii.gz'), sitk.sitkFloat32)
+        seg = sitk.ReadImage(os.path.join(zonal_mask_path, case_id + '.nii.gz'))
 
         # image resample
         t2 = resample(t2, mask=False)
@@ -122,38 +122,53 @@ if __name__ == "__main__":
 
         # save
         for i in range(6):
-            os.makedirs(os.path.join(args.output_path, 'subset{}'.format(i)), exist_ok=True)
+            os.makedirs(os.path.join(output_path, 'subset{}'.format(i)), exist_ok=True)
 
         if case_id in f0:   
-            sitk.WriteImage(t2, os.path.join(args.output_path, 'subset0', case_id + '_0000.nii.gz'))
-            sitk.WriteImage(adc, os.path.join(args.output_path, 'subset0', case_id + '_0001.nii.gz'))
-            sitk.WriteImage(dwi, os.path.join(args.output_path, 'subset0', case_id + '_0002.nii.gz'))
-            sitk.WriteImage(seg, os.path.join(args.output_path, 'subset0', case_id + '.nii.gz'))
+            sitk.WriteImage(t2, os.path.join(output_path, 'subset0', case_id + '_0000.nii.gz'))
+            sitk.WriteImage(adc, os.path.join(output_path, 'subset0', case_id + '_0001.nii.gz'))
+            sitk.WriteImage(dwi, os.path.join(output_path, 'subset0', case_id + '_0002.nii.gz'))
+            sitk.WriteImage(seg, os.path.join(output_path, 'subset0', case_id + '.nii.gz'))
         elif case_id in f1:
-            sitk.WriteImage(t2, os.path.join(args.output_path, 'subset1', case_id + '_0000.nii.gz'))
-            sitk.WriteImage(adc, os.path.join(args.output_path, 'subset1', case_id + '_0001.nii.gz'))
-            sitk.WriteImage(dwi, os.path.join(args.output_path, 'subset1', case_id + '_0002.nii.gz'))
-            sitk.WriteImage(seg, os.path.join(args.output_path, 'subset1', case_id + '.nii.gz'))
+            sitk.WriteImage(t2, os.path.join(output_path, 'subset1', case_id + '_0000.nii.gz'))
+            sitk.WriteImage(adc, os.path.join(output_path, 'subset1', case_id + '_0001.nii.gz'))
+            sitk.WriteImage(dwi, os.path.join(output_path, 'subset1', case_id + '_0002.nii.gz'))
+            sitk.WriteImage(seg, os.path.join(output_path, 'subset1', case_id + '.nii.gz'))
         elif case_id in f2:
-            sitk.WriteImage(t2, os.path.join(args.output_path, 'subset2', case_id + '_0000.nii.gz'))
-            sitk.WriteImage(adc, os.path.join(args.output_path, 'subset2', case_id + '_0001.nii.gz'))
-            sitk.WriteImage(dwi, os.path.join(args.output_path, 'subset2', case_id + '_0002.nii.gz'))
-            sitk.WriteImage(seg, os.path.join(args.output_path, 'subset2', case_id + '.nii.gz'))
+            sitk.WriteImage(t2, os.path.join(output_path, 'subset2', case_id + '_0000.nii.gz'))
+            sitk.WriteImage(adc, os.path.join(output_path, 'subset2', case_id + '_0001.nii.gz'))
+            sitk.WriteImage(dwi, os.path.join(output_path, 'subset2', case_id + '_0002.nii.gz'))
+            sitk.WriteImage(seg, os.path.join(output_path, 'subset2', case_id + '.nii.gz'))
         elif case_id in f3:
-            sitk.WriteImage(t2, os.path.join(args.output_path, 'subset3', case_id + '_0000.nii.gz'))
-            sitk.WriteImage(adc, os.path.join(args.output_path, 'subset3', case_id + '_0001.nii.gz'))
-            sitk.WriteImage(dwi, os.path.join(args.output_path, 'subset3', case_id + '_0002.nii.gz'))
-            sitk.WriteImage(seg, os.path.join(args.output_path, 'subset3', case_id + '.nii.gz'))
+            sitk.WriteImage(t2, os.path.join(output_path, 'subset3', case_id + '_0000.nii.gz'))
+            sitk.WriteImage(adc, os.path.join(output_path, 'subset3', case_id + '_0001.nii.gz'))
+            sitk.WriteImage(dwi, os.path.join(output_path, 'subset3', case_id + '_0002.nii.gz'))
+            sitk.WriteImage(seg, os.path.join(output_path, 'subset3', case_id + '.nii.gz'))
         elif case_id in f4:
-            sitk.WriteImage(t2, os.path.join(args.output_path, 'subset4', case_id + '_0000.nii.gz'))
-            sitk.WriteImage(adc, os.path.join(args.output_path, 'subset4', case_id + '_0001.nii.gz'))
-            sitk.WriteImage(dwi, os.path.join(args.output_path, 'subset4', case_id + '_0002.nii.gz'))
-            sitk.WriteImage(seg, os.path.join(args.output_path, 'subset4', case_id + '.nii.gz'))
+            sitk.WriteImage(t2, os.path.join(output_path, 'subset4', case_id + '_0000.nii.gz'))
+            sitk.WriteImage(adc, os.path.join(output_path, 'subset4', case_id + '_0001.nii.gz'))
+            sitk.WriteImage(dwi, os.path.join(output_path, 'subset4', case_id + '_0002.nii.gz'))
+            sitk.WriteImage(seg, os.path.join(output_path, 'subset4', case_id + '.nii.gz'))
         elif case_id in f5:
-            sitk.WriteImage(t2, os.path.join(args.output_path, 'subset5', case_id + '_0000.nii.gz'))
-            sitk.WriteImage(adc, os.path.join(args.output_path, 'subset5', case_id + '_0001.nii.gz'))
-            sitk.WriteImage(dwi, os.path.join(args.output_path, 'subset5', case_id + '_0002.nii.gz'))
-            sitk.WriteImage(seg, os.path.join(args.output_path, 'subset5', case_id + '.nii.gz'))
+            sitk.WriteImage(t2, os.path.join(output_path, 'subset5', case_id + '_0000.nii.gz'))
+            sitk.WriteImage(adc, os.path.join(output_path, 'subset5', case_id + '_0001.nii.gz'))
+            sitk.WriteImage(dwi, os.path.join(output_path, 'subset5', case_id + '_0002.nii.gz'))
+            sitk.WriteImage(seg, os.path.join(output_path, 'subset5', case_id + '.nii.gz'))
 
     print('well done')
 
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--images_path', type=str, default='/workdir/nnUNet_raw_data/Task2302_z-nnmnet/imagesTr')
+    parser.add_argument('--zonal_mask_path', type=str, default='/workdir/results/nnUNet/3d_fullres/Task990_prostate_zonal_Seg/nnUNetTrainerV2__nnUNetPlansv2.1/fold_0/predictions_post')
+    parser.add_argument('--output_path', type=str, default='/workdir/SSL/data')
+    parser.add_argument('--splits_path', type=str, default='/workdir/nnUNet_raw_data/Task2302_z-nnmnet/splits.json')
+    args = parser.parse_args()
+
+    data_preprocessing_zonal(
+        images_path=args.images_path,
+        zonal_mask_path=args.zonal_mask_path,
+        output_path=args.output_path,
+        splits_path=args.splits_path
+    )

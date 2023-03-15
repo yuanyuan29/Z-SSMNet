@@ -5,7 +5,6 @@ import os
 import shutil
 
 class Config:
-    DATA_DIR = "/workdir/SSL/generated_cubes"
     nb_epoch = 1000
     patience = 20
     lr = 1e-1
