@@ -2,7 +2,7 @@
 
 FROM nvcr.io/nvidia/pytorch:20.12-py3
 ARG gittoken
-ARG branch=main
+ARG branch=master
 
 RUN groupadd -r user && useradd -m --no-log-init -r -g user user
 

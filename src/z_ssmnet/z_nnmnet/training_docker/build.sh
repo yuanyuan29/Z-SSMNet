@@ -10,8 +10,8 @@ else
     read gittoken
 fi
 
-read -p "Enter the branch of yuanyuan29/Z-SSMNet you want to build [main]: " branch
-branch=${branch:-main}
+read -p "Enter the branch of yuanyuan29/Z-SSMNet you want to build [master]: " branch
+branch=${branch:-master}
 
 echo "Building yuanyuan29/Z-SSMNet docker image from branch $branch"
 
