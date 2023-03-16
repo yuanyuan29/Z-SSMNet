@@ -85,3 +85,6 @@ RUN pip3 install /opt/algorithm/Z-SSMNet
 COPY --chown=user nnunet_wrapper.py /home/user/nnunet_wrapper.py
 RUN chmod +x /home/user/nnunet_wrapper.py && \
     ln -s /home/user/nnunet_wrapper.py /usr/local/bin/nnunet
+
+RUN chmod +x /opt/algorithm/Z-SSMNet/src/z_ssmnet/training/train_z_ssmnet.py && \
+    ln -s /opt/algorithm/Z-SSMNet/src/z_ssmnet/training/train_z_ssmnet.py /usr/local/bin/train
