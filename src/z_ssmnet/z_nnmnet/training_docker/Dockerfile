@@ -7,6 +7,7 @@ RUN groupadd -r user && useradd -m --no-log-init -r -g user user
 # Configuration
 RUN echo "PYTHONUNBUFFERED=1" >> /etc/environment && \
     echo "OMP_NUM_THREADS=1" >> /etc/environment
+ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
 
 # Install a few dependencies that are not automatically installed, plus nnU-Net
 RUN apt-get update && \
