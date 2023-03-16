@@ -33,7 +33,7 @@ def prepare_zonal_mask_npz(
     files = save_path.glob("*.pkl")
 
     for file in files:
-        file_name = file.split("/")[-1][:13]
+        file_name = file.name[:13]
         with open(file, 'rb') as f:
             data = pickle.load(f)
             org_size = data['original_size_of_raw_data']
