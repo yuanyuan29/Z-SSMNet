@@ -13,21 +13,24 @@
 # limitations under the License.
 
 import argparse
-import glob
 import os
+from pathlib import Path
 import pickle
 import stat
+from typing import Union
 
 import numpy as np
 import SimpleITK as sitk
 
 
 def prepare_zonal_mask_npz(
-    data_path,
-    save_path,
+    data_path: Union[Path, str],
+    save_path: Union[Path, str],
 ):
+    data_path = Path(data_path)
+    save_path = Path(save_path)
     os.chmod(save_path, stat.S_IRWXO)
-    files = glob.glob(save_path + "*.pkl")
+    files = save_path.glob("*.pkl")
 
     for file in files:
         file_name = file.split("/")[-1][:13]
@@ -44,7 +47,7 @@ def prepare_zonal_mask_npz(
             resample_spacing = data['spacing_after_resampling']
             resample_size = data['size_after_resampling']
 
-            mask = sitk.ReadImage(data_path + file_name + ".nii.gz")
+            mask = sitk.ReadImage(str(data_path / f"{file_name}.nii.gz"))
             mask_size = mask.GetSize()
             mask_origin = mask.GetOrigin()
             mask_spacing = mask.GetSpacing()
@@ -68,7 +71,7 @@ def prepare_zonal_mask_npz(
 
             # save the mask as npz
             mask_npz = sitk.GetArrayFromImage(mask_resample)
-            np.savez_compressed(save_path + file_name + "_seg.npz", data = mask_npz)
+            np.savez_compressed(save_path / f"{file_name}_seg.npz", data = mask_npz)
 
 
 if __name__ == "__main__":
