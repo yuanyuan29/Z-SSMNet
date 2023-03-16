@@ -1,6 +1,8 @@
 # Adapted from https://github.com/DIAGNijmegen/diag-nnunet/blob/master/Dockerfile
 
 FROM nvcr.io/nvidia/pytorch:20.12-py3
+ARG gittoken
+ARG branch=main
 
 RUN groupadd -r user && useradd -m --no-log-init -r -g user user
 
@@ -73,7 +75,12 @@ RUN SITE_PKG=`pip3 show nnunet | grep "Location:" | awk '{print $2}'` && \
 COPY run_training.py /tmp/run_training.py
 RUN SITE_PKG=`pip3 show nnunet | grep "Location:" | awk '{print $2}'` && \
     mv /tmp/run_training.py "$SITE_PKG/nnunet/run/run_training.py"
-    
+
+# Install Z-SSMNet module
+WORKDIR /opt/algorithm
+RUN git clone https://${gittoken}@github.com/yuanyuan29/Z-SSMNet --branch ${branch} --single-branch
+RUN pip3 install /opt/algorithm/Z-SSMNet
+
 # Configure entrypoint
 COPY --chown=user nnunet_wrapper.py /home/user/nnunet_wrapper.py
 RUN chmod +x /home/user/nnunet_wrapper.py && \
