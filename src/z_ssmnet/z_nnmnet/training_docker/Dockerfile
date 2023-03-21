@@ -1,6 +1,8 @@
 # Adapted from https://github.com/DIAGNijmegen/diag-nnunet/blob/master/Dockerfile
 
 FROM nvcr.io/nvidia/pytorch:20.12-py3
+ARG gittoken
+ARG branch=master
 
 RUN groupadd -r user && useradd -m --no-log-init -r -g user user
 
@@ -33,9 +35,9 @@ RUN SITE_PKG=`pip3 show nnunet | grep "Location:" | awk '{print $2}'` && \
 
 # Install PI-CAI repositories
 RUN pip3 install \
-    picai_eval>=1.4.4 \
-    picai_prep>=2.1.2 \
-    picai_baseline>=0.8.1 \
+    picai_eval==1.4.4 \
+    picai_prep==2.1.3 \
+    picai_baseline==0.8.2 \
     mlxtend==0.19.0
 
 # Install SSL required modules
@@ -73,8 +75,16 @@ RUN SITE_PKG=`pip3 show nnunet | grep "Location:" | awk '{print $2}'` && \
 COPY run_training.py /tmp/run_training.py
 RUN SITE_PKG=`pip3 show nnunet | grep "Location:" | awk '{print $2}'` && \
     mv /tmp/run_training.py "$SITE_PKG/nnunet/run/run_training.py"
-    
+
+# Install Z-SSMNet module
+WORKDIR /opt/algorithm
+RUN git clone https://${gittoken}@github.com/yuanyuan29/Z-SSMNet --branch ${branch} --single-branch
+RUN pip3 install /opt/algorithm/Z-SSMNet
+
 # Configure entrypoint
 COPY --chown=user nnunet_wrapper.py /home/user/nnunet_wrapper.py
 RUN chmod +x /home/user/nnunet_wrapper.py && \
     ln -s /home/user/nnunet_wrapper.py /usr/local/bin/nnunet
+
+RUN chmod +x /opt/algorithm/Z-SSMNet/src/z_ssmnet/training/train_z_ssmnet.py && \
+    ln -s /opt/algorithm/Z-SSMNet/src/z_ssmnet/training/train_z_ssmnet.py /usr/local/bin/train
