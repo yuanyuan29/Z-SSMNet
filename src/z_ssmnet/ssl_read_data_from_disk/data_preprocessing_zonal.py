@@ -66,7 +66,7 @@ def crop(t2, adc, dwi, seg):
     # Crop
     x_start, x_end = max(0, bbox[0]-50), min(bbox[0] + bbox[3] + 50, t2.GetSize()[0])
     y_start, y_end = max(0, bbox[1]-50), min(bbox[1] + bbox[4] + 50, t2.GetSize()[1])
-    z_start, z_end = max(0, bbox[2]-50), min(bbox[2] + bbox[5] + 50, t2.GetSize()[2])
+    z_start, z_end = max(0, bbox[2]-50//6), min(bbox[2] + bbox[5] + 50//6, t2.GetSize()[2])
 
     cropFilter = sitk.RegionOfInterestImageFilter()
     cropFilter.SetSize([x_end - x_start, y_end - y_start, z_end - z_start])
@@ -103,6 +103,12 @@ def infinite_generator_from_one_volume(
     adc_array[adc_array > adc_max] = adc_max
     adc_array = 1.0 * (adc_array - adc_min) / (adc_max - adc_min)
     dwi_array  = 1.0 * (dwi_array - np.min(dwi_array)) / (np.max(dwi_array) - np.min(dwi_array))
+
+    if t2_array.shape[2] < input_deps:
+            t2_array = np.pad(t2_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
+            adc_array = np.pad(adc_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
+            dwi_array = np.pad(dwi_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
+            seg_array = np.pad(seg_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
 
     slice_set = np.zeros((scale, 4, input_rows, input_cols, input_deps), dtype=float)
     
