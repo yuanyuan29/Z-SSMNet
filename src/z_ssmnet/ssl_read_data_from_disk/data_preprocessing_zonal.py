@@ -95,8 +95,6 @@ def infinite_generator_from_one_volume(
 ):
     adc_max = 3000.0
     adc_min = 0.0
-
-    size_x, size_y, size_z = t2_array.shape
  
     t2_array = 1.0 * (t2_array - np.min(t2_array)) / (np.max(t2_array)  - np.min(t2_array))
     adc_array[adc_array < adc_min] = adc_min
@@ -104,12 +102,14 @@ def infinite_generator_from_one_volume(
     adc_array = 1.0 * (adc_array - adc_min) / (adc_max - adc_min)
     dwi_array  = 1.0 * (dwi_array - np.min(dwi_array)) / (np.max(dwi_array) - np.min(dwi_array))
 
-    if t2_array.shape[2] < input_deps:
-            t2_array = np.pad(t2_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
-            adc_array = np.pad(adc_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
-            dwi_array = np.pad(dwi_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
-            seg_array = np.pad(seg_array, ((0,0), (0,0), ((input_deps - t2_array.shape[2])//2, (input_deps - t2_array.shape[2] - (input_deps - t2_array.shape[2])//2))), "constant")
+    deps = t2_array.shape[2]
+    if deps < input_deps:
+        t2_array = np.pad(t2_array, ((0,0), (0,0), ((input_deps - deps)//2, (input_deps - deps - (input_deps - deps)//2))), "constant")
+        adc_array = np.pad(adc_array, ((0,0), (0,0), ((input_deps - deps)//2, (input_deps - deps - (input_deps - deps)//2))), "constant")
+        dwi_array = np.pad(dwi_array, ((0,0), (0,0), ((input_deps - deps)//2, (input_deps - deps - (input_deps - deps)//2))), "constant")
+        seg_array = np.pad(seg_array, ((0,0), (0,0), ((input_deps - deps)//2, (input_deps - deps - (input_deps - deps)//2))), "constant")
 
+    size_x, size_y, size_z = t2_array.shape
     slice_set = np.zeros((scale, 4, input_rows, input_cols, input_deps), dtype=float)
     
     num_pair = 0
@@ -121,9 +121,9 @@ def infinite_generator_from_one_volume(
         elif cnt > 50 * scale and num_pair > 0:
             return np.array(slice_set[:num_pair])
 
-        start_x = random.randint(0+len_border, size_x-crop_rows-1-len_border)
-        start_y = random.randint(0+len_border, size_y-crop_cols-1-len_border)
-        start_z = random.randint(0+len_border_z, size_z-input_deps-1-len_border_z)
+        start_x = random.randint(0+len_border, size_x-crop_rows-len_border)
+        start_y = random.randint(0+len_border, size_y-crop_cols-len_border)
+        start_z = random.randint(0+len_border_z, size_z-input_deps-len_border_z)
         
         t2_crop_window = t2_array[start_x : start_x+crop_rows,
                                   start_y : start_y+crop_cols,
