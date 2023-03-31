@@ -31,8 +31,6 @@ def main():
     parser.add_argument('--preprocesseddir', type=str, default=os.environ.get('SM_CHANNEL_PREPROCESSED', "/input/preprocessed"))
     parser.add_argument('--outputdir', type=str, default=os.environ.get('SM_MODEL_DIR', "/output"))
     parser.add_argument('--checkpointsdir', type=str, default="/checkpoints")
-    parser.add_argument('--folds', type=int, nargs="+", default=(0, 1, 2, 3, 4),
-                        help="Folds to train. Default: 0 1 2 3 4")
 
     args, _ = parser.parse_known_args()
 
@@ -58,7 +56,10 @@ def main():
     )
 
     # Export trained model
-    shutil.copytree(checkpoints_dir / "SSL/pretrained_weights", output_dir / "SSL/pretrained_weights")
+    src = checkpoints_dir / "SSL/pretrained_weights"
+    dst = output_dir / "SSL/pretrained_weights"
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(src, dst)
 
 
 if __name__ == '__main__':
