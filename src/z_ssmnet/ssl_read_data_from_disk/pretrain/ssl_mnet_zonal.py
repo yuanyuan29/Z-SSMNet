@@ -1,31 +1,24 @@
 # This code is adapted from https://github.com/MrGiovanni/ModelsGenesis/blob/master/competition/Genesis_nnUNet.py. 
 # The original code is licensed under the attached LICENSE (https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/ssl/LICENSE).
 
-from pathlib import Path
-from pickle import TRUE
-from typing import Union
 import warnings
+from pathlib import Path
+from typing import Union
+
 warnings.filterwarnings('ignore')
 import os
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-import numpy as np
-from utils import *
-from config_zonal import Config
-from torch import nn
-import torch
-from nnunet.training.learning_rate.poly_lr import poly_lr
-from nnunet.network_architecture.generic_UNet import Generic_UNet
-from nnunet.network_architecture.initialization import InitWeights_He
 import random
-import copy
-from scipy.special import comb
 import sys
-from torch.optim import lr_scheduler
-from optparse import OptionParser
+
+import numpy as np
+import torch
+from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 
-from MNet import MNet
+from z_ssmnet.ssl_read_data_from_disk.pretrain.config_zonal import Config
+from z_ssmnet.ssl_read_data_from_disk.pretrain.MNet import MNet
+from z_ssmnet.ssl_read_data_from_disk.pretrain.utils import CustomDataset
+
 
 def pretrain(
     model_dir: Union[Path, str] = "/workdir/SSL/pretrained_weights/",
