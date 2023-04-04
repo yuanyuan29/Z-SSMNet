@@ -1,8 +1,6 @@
 # This code is adapted from https://github.com/MrGiovanni/ModelsGenesis/blob/master/competition/config.py. 
 # The original code is licensed under the attached LICENSE (https://github.com/yuanyuan29/Z-SSMNet/blob/master/src/z_ssmnet/ssl/LICENSE).
 
-import os
-import shutil
 
 class Config:
     DATA_DIR = "/workdir/SSL/generated_cubes"

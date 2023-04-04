@@ -81,14 +81,14 @@ def main(taskname="Task2302_z-nnmnet"):
         for fold in args.folds:
             src = results_dir / f"fold_{fold}/{checkpoint}.model"
             dst = export_dir / f"fold_{fold}/{checkpoint}.model"
-            dst.mkdir(parents=True, exist_ok=True)
-            shutil.copy(src, dst)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
 
             src = results_dir / f"fold_{fold}/{checkpoint}.model.pkl"
             dst = export_dir / f"fold_{fold}/{checkpoint}.model.pkl"
-            shutil.copy(src, dst)
+            shutil.copyfile(src, dst)
 
-    shutil.copy(results_dir / "plans.pkl", export_dir / "plans.pkl")
+    shutil.copyfile(results_dir / "plans.pkl", export_dir / "plans.pkl")
 
 
 if __name__ == '__main__':

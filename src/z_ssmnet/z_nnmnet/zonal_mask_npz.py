@@ -14,9 +14,9 @@
 
 import argparse
 import os
-from pathlib import Path
 import pickle
 import stat
+from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -29,7 +29,10 @@ def prepare_zonal_mask_npz(
 ):
     data_path = Path(data_path)
     save_path = Path(save_path)
-    os.chmod(save_path, stat.S_IRWXO)
+    try:
+        os.chmod(save_path, stat.S_IRWXO)
+    except PermissionError as e:
+        print(e)
     files = save_path.glob("*.pkl")
 
     for file in files:
