@@ -79,6 +79,8 @@ def pretrain(
     num_epoch_no_improvement = 0
     sys.stdout.flush()
 
+    config.patience = int(np.round(config.patience * 1500 / len(training_dataset)))
+
     if config.weights != None:
         checkpoint=torch.load(config.weights)
         model.load_state_dict(checkpoint['state_dict'])
