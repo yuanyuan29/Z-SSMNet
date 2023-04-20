@@ -37,6 +37,9 @@ def pretrain(
         os.makedirs(logs_path)
 
     config = Config()
+    model_path = os.path.join(model_dir, config.exp_name+".model")
+    if os.path.exists(model_path):
+        config.weights = model_path
     config.display()
 
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -75,6 +78,8 @@ def pretrain(
     intial_epoch =0
     num_epoch_no_improvement = 0
     sys.stdout.flush()
+
+    config.patience = int(np.round(config.patience * 1500 / len(training_dataset)))
 
     if config.weights != None:
         checkpoint=torch.load(config.weights)
@@ -166,8 +171,8 @@ def pretrain(
                 'epoch':epoch + 1,
                 'state_dict' : model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict()
-            },os.path.join(model_dir, config.exp_name+".model"))
-            print("Saving model ",os.path.join(model_dir, config.exp_name+".model"))
+            },model_path)
+            print("Saving model ",model_path)
 
         else:
             print("Validation loss does not decrease from {:.4f}, num_epoch_no_improvement {}".format(best_loss,num_epoch_no_improvement))
