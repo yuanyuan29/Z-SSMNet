@@ -180,6 +180,7 @@ def plan_train(argv):
     parser.add_argument('task', type=str)
     parser.add_argument('data', type=str)
     parser.add_argument('--results', type=str, required=False)
+    parser.add_argument('--prepdir', type=str, default=os.environ.get('prepdir', '/home/user/data'))
     parser.add_argument('--network', type=str, default='3d_fullres')
     parser.add_argument('--trainer', type=str, default='nnUNetTrainerV2')
     parser.add_argument('--trainer_kwargs', required=False, default="{}",
@@ -214,7 +215,7 @@ def plan_train(argv):
 
     # Set environment variables
     datadir = Path(args.data)
-    prepdir = Path(os.environ.get('prepdir', '/home/user/data'))
+    prepdir = Path(args.prepdir)
 
     splits_file = prepdir / args.task / 'splits_final.pkl'
 
@@ -228,10 +229,13 @@ def plan_train(argv):
         taskid = get_task_id(args.task)
         taskdir = datadir / 'nnUNet_preprocessed' / args.task
 
-        if path_exists(taskdir):
+        if path_exists(taskdir) or path_exists(prepdir / args.task):
+            # Found plans and preprocessed data (maybe need to copy to local node)
             if args.custom_split:
-                remote_splits_file = taskdir / 'splits_final.json'
-                if not remote_splits_file.exists() or checksum(remote_splits_file) != checksum(args.custom_split):
+                splits_file = taskdir / 'splits_final.json'
+                if not splits_file.exists():
+                    splits_file = prepdir / args.task / 'splits_final.json'
+                if not splits_file.exists() or checksum(splits_file) != checksum(args.custom_split):
                     print(f"[#] Found plans and preprocessed data for {args.task}"
                           " - but you also provided a custom split which is different"
                           " from the present split, this is not permitted")
@@ -240,26 +244,28 @@ def plan_train(argv):
             if args.plan_only:
                 print(f'[#] Found plans and preprocessed data for {args.task} - nothing to do')
             else:
-                print(f'[#] Found plans and preprocessed data for {args.task} - copying to compute node')
-                if not os.path.exists(prepdir / args.task):
+                print(f'[#] Found plans and preprocessed data for {args.task}')
+                if not (prepdir / args.task).exists():
+                    print("[#] Copying plans and preprocessed data to compute node")
                     prepdir.mkdir(parents=True, exist_ok=True)
                     shutil_sol.copytree(taskdir, prepdir / args.task)
-                print(f'[#] Found plans and preprocessed data for {args.task} - copied to compute node')
+                    print(f'[#] Copied plans and preprocessed data to compute node')
         else:
             # Plans and data not available yet, run preprocessing
             print('[#] Creating plans and preprocessing data')
             cmd = [
                 'nnUNet_plan_and_preprocess',
                 '-t', taskid,
-                '-tl', os.environ.get("nnUNet_tl", '1'), '-tf', os.environ.get("nnUNet_tf", '1'),
+                '-tl', os.environ.get("nnUNet_tl", '8'), '-tf', os.environ.get("nnUNet_tf", '8'),
                 '--verify_dataset_integrity'
             ]
             if not args.plan_2d and '2d' not in args.network:
                 cmd.extend(['--planner2d', 'None'])  # disable 2D planning to speed up the preprocessing phase
             if args.dont_plan_3d and '3d' not in args.network:
                 cmd.extend(['--planner3d', 'None'])
+            if args.pretrained_weights is not None:
+                cmd.extend(['-pretrained_weights', args.pretrained_weights])
             subprocess.check_call(cmd)
-            
 
             # Use a custom data split?
             if args.custom_split:
@@ -273,11 +279,12 @@ def plan_train(argv):
                 splits_file.parent.mkdir(parents=True, exist_ok=True)
                 with splits_file.open('wb') as fp:
                     pickle.dump(splits, fp)
-                shutil_sol.copyfile(args.custom_split, splits_file.with_suffix('.json'))
+                atomic_file_copy(args.custom_split, splits_file.with_suffix('.json'))
 
             if (prepdir / args.task).absolute() != taskdir.absolute() and not args.dont_copy_preprocessed_data:
                 # Copy preprocessed data to storage server
-                print('[#] Copying plans and preprocessed data from compute node to storage server')
+                print('[#] Copying plans and preprocessed data from compute node to storage server' +
+                      f' ({taskdir} -> {prepdir / args.task})')
                 taskdir.parent.mkdir(parents=True, exist_ok=True)
                 shutil_sol.copytree(prepdir / args.task, taskdir)
 
@@ -303,9 +310,6 @@ def plan_train(argv):
         elif path_exists(outdir) and any(outdir.glob("*.model")):
             print('[#] Resuming network training')
             cmd.append('-c')
-        elif args.pretrained_weights is not None:
-            print("Load pre-trained_model")
-            cmd.extend(['-pretrained_weights', args.pretrained_weights])
         else:
             print('[#] Starting network training')
 
@@ -324,9 +328,9 @@ def plan_train(argv):
         subprocess.check_call(cmd)
 
         # Copy split file since that is for sure available now (nnUNet_train has created
-        # it the file did not exist already - unless training with "all", so still check)
-        if splits_file.exists() and splits_file.parent.absolute() != taskdir.absolute():
-            shutil_sol.copyfile(splits_file, taskdir)
+        # it if the file did not exist already - unless training with "all", so still check)
+        if splits_file.exists() and splits_file.parent.absolute() != taskdir.absolute() and taskdir.is_dir():
+            atomic_file_copy(splits_file, taskdir)
 
 
 def reveal_split(argv):
