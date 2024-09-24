@@ -1,15 +1,18 @@
-# Z-SSMNet: A Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis in Bi-parametric MRI
+# Z-SSMNet: Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis with Bi-parametric MRI
 
-This repository provides the **official** implementation of the paper "[Z-SSMNet: A Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis in bpMRI](https://arxiv.org/abs/2212.05808)". In this paper, we propose a new Zonal-aware Self-supervised Mesh Network that adaptively fuses multiple 2D/2.5D/3D CNNs to effectively balance representation for sparse inter-slice information and dense intra-slice information in bpMRI. A self-supervised learning (SSL) technique is further introduced to pre-train our network using unlabelled data to learn the generalizable image features. Furthermore, we constrained our network to understand the zonal-specific domain knowledge to improve the diagnosis precision of clinically significant prostate cancer (csPCa). Our model was developed on the [PI-CAI dataset](https://zenodo.org/record/6624726) while participating in the [PI-CAI challenge](https://pi-cai.grand-challenge.org/).
+This repository provides the **official** implementation of the paper "[Z-SSMNet: Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis with bpMRI](https://arxiv.org/abs/2212.05808)". In this paper, we propose a new Zonal-aware Self-supervised Mesh Network that adaptively fuses multiple 2D/2.5D/3D CNNs to effectively balance representation for sparse inter-slice information and dense intra-slice information in bpMRI. A self-supervised learning (SSL) technique is further introduced to pre-train our network using unlabelled data to learn the generalizable image features. Furthermore, we constrained our network to understand the zonal-specific domain knowledge to improve the precision of diagnosis of clinically significant prostate cancer (csPCa). Our model was developed on the [PI-CAI dataset](https://zenodo.org/record/6624726) while participating in the [PI-CAI challenge](https://pi-cai.grand-challenge.org/).
 
 For more information about the **Z-SSMNet**, please read the following paper (arXiv preprint)
 
 ```
-@article{yuan2022z,
-  title={Z-SSMNet: A Zonal-aware Self-Supervised Mesh Network for Prostate Cancer Detection and Diagnosis in bpMRI},
-  author={Yuan, Yuan and Ahn, Euijoon and Feng, Dagan and Khadra, Mohamad and Kim, Jinman},
-  journal={arXiv preprint arXiv:2212.05808},
-  year={2022}
+@misc{yuan2024zssmnetzonalawareselfsupervisedmesh,
+      title={Z-SSMNet: Zonal-aware Self-supervised Mesh Network for Prostate Cancer Detection and Diagnosis with Bi-parametric MRI}, 
+      author={Yuan Yuan and Euijoon Ahn and Dagan Feng and Mohamad Khadra and Jinman Kim},
+      year={2024},
+      eprint={2212.05808},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2212.05808}, 
 }
 ```
 
@@ -148,19 +151,19 @@ The implementation of the model consists of three main parts:
 
 ### Zonal Segmentation
 
-Prostate area is consist of peripharal zone (PZ), transition zone (TZ), central zone (CZ) and anterior fibromuscular stroma (AFS). Prostate cancer (PCa) lesions located in different zones have different characteristics. Moreover, approximately 70%-75% of PCa originate in the PZ and 20%-30% in the TZ [[1]](https://www.sciencedirect.com/science/article/pii/S0302283815008489). In this work, we trained a standard `3D nnU-Net` [[2]](https://www.nature.com/articles/s41592-020-01008-z) with external public datasets to generate binary prostate zonal anatomy masks (peripheral and rest (TZ, CZ, AFS) of the gland) as additional input information to guide the network to learn region-specific knowledge useful for clinically significant PCa (csPCa) detection and diagnosis.
+The prostate area consists of the peripheral zone (PZ), transition zone (TZ), central zone (CZ) and anterior fibromuscular stroma (AFS). Prostate cancer (PCa) lesions located in different zones have different characteristics. Moreover, approximately 70%-75% of PCa originate in the PZ and 20%-30% in the TZ [[1]](https://www.sciencedirect.com/science/article/pii/S0302283815008489). In this work, we trained a standard `3D nnU-Net` [[2]](https://www.nature.com/articles/s41592-020-01008-z) with external public datasets to generate binary prostate zonal anatomy masks (peripheral and rest (TZ, CZ, AFS) of the gland) as additional input information to guide the network to learn region-specific knowledge useful for clinically significant PCa (csPCa) detection and diagnosis.
 
 [→ Read the full documentation here](https://github.com/yuanyuan29/Z-SSMNet/blob/master/zonal_segmentation.md).
 
 ### SSL Pre-training
 
-SSL is a general learning framework that relies on surrogate (pretext) tasks that can be formulated using only unsupervised data. A pretext task is designed in a way that solving it requires learning of valuable image representations for the downstream (main) task, which contributes to improve the generalization ability and performance of the model. We introduced image restoration as the pretext task and pre-trained our zonal-aware mesh network in a self-supervised manner.
+SSL is a general learning framework that relies on surrogate (pretext) tasks that can be formulated using only unsupervised data. A pretext task is designed in a way that solving it requires learning of valuable image representations for the downstream (main) task, which contributes to improving the generalization ability and performance of the model. We introduced image restoration as the pretext task and pre-trained our zonal-aware mesh network in a self-supervised manner.
 
 [→ Read the full documentation here](https://github.com/yuanyuan29/Z-SSMNet/blob/master/ssl.md).
 
 ### Z-nnMNet
 
-Considering the heterogeneous between data from multi-centres and multi-vendors, we integrated the zonal-aware mesh network into the famous nnU-Net framework which provides a performant framework for medical image segmentation to form the `Z-nnMNet` that can pre-process the data adaptively. For large datasets with labels, the model can be trained from scratch. If the dataset is small or some labels of the data are noisy, fine-tuning based on the SSL pre-trained model can help achieve better performance.
+Considering the heterogeneous between data from multi-centres and multi-vendors, we integrated the zonal-aware mesh network into the famous nnU-Net framework, which provides a performant framework for medical image segmentation to form the `Z-nnMNet` that can pre-process the data adaptively. For large datasets with labels, the model can be trained from scratch. If the dataset is small or some labels of the data are noisy, fine-tuning based on the SSL pre-trained model can help achieve better performance.
 
 [→ Read the full documentation here](https://github.com/yuanyuan29/Z-SSMNet/blob/master/z-nnmnet.md).
 
@@ -170,7 +173,7 @@ Considering the heterogeneous between data from multi-centres and multi-vendors,
 
 [[2]](https://www.nature.com/articles/s41592-020-01008-z) F. Isensee, P. F. Jaeger, S. A. A. Kohl, J. Petersen, and K. H. Maier-Hein, “nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation,” Nature Methods, vol. 18, no. 2, pp. 203-+, Feb, 2021.
 
-[[3]](https://arxiv.org/abs/2205.04846) Z. Dong, Y. He, X. Qi, Y. Chen, H. Shu, J.-L. Coatrieux, G. Yang, and S. Li, “MNet: Rethinking 2D/3D Networks for Anisotropic Medical Image Segmentation,” arXiv:2205.04846, 2022.
+[[3]](https://univ-rennes.hal.science/hal-04393722/) Z. Dong, Y. He, X. Qi, Y. Chen, H. Shu, J.-L. Coatrieux, G. Yang, and S. Li, “MNet: Rethinking 2D/3D Networks for Anisotropic Medical Image Segmentation,” Thirty-First International Joint Conference on Artificial Intelligence {IJCAI-22}, Jul 2022, Vienna, Austria. pp.870-876.
 
 [[4]](https://www.sciencedirect.com/science/article/pii/S1361841520302048) Z. Zhou, V. Sodha, J. Pang, M. B. Gotway, and J. Liang, “Models Genesis,” Med Image Anal, vol. 67, pp. 101840, Jan, 2021.
 
